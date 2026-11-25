@@ -1,0 +1,34 @@
+{
+  "name": "LinWindows",
+  "badgeLabel": "LW",
+  "signingKey": "b105b29d7d3e6c5cb459e9597714047b04c6c2ff41c3789cfe38a48a2a107d55",
+  "extensionList": {
+    "extensions": [
+      {
+        "name": "MissAV",
+        "packageName": "eu.kanade.tachiyomi.animeextension.all.missav",
+        "resources": {
+          "apkUrl": "https://raw.githubusercontent.com/linwindows/anime-extensions/repo/aniyomi-all.missav-v14.36.apk",
+          "iconUrl": "https://raw.githubusercontent.com/linwindows/anime-extensions/repo/eu.kanade.tachiyomi.animeextension.all.missav.png"
+        },
+        "extensionLib": "14",
+        "versionCode": "36",
+        "versionName": "14.36",
+        "contentWarning": "CONTENT_WARNING_NSFW",
+        "sources": [
+          {
+            "id": "168969881246615628",
+            "name": "MissAV",
+            "language": "all",
+            "homeUrl": "https://missav.live",
+            "mirrorUrls": [
+              "https://missav.live",
+              "https://missav.ai",
+              "https://missav.ws"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
