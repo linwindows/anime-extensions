@@ -34,13 +34,28 @@ data class Recommendation(
     fun toSAnime(): SAnime? {
         if (videoInfo.dm == null || videoInfo.titleEn == null) return null
         return SAnime.create().apply {
-            url = if (videoInfo.dm == 0) "/en/$id" else "/dm${videoInfo.dm}/en/$id"
+            url = if (videoInfo.dm == 0) "/cn/$id" else "/dm${videoInfo.dm}/cn/$id"
             title = "${stripID().uppercase()} ${videoInfo.titleEn}"
             thumbnail_url = "https://fourhoi.com/${stripID()}/cover-t.jpg"
+            genre = extractGenres()
         }
     }
 
     private fun stripID(): String = id.lowercase().replace(STRIP_SUB_REGEX, "")
+
+    private fun extractGenres(): String {
+        val genres = mutableListOf<String>()
+        if (id.contains("-uncensored-leak", ignoreCase = true)) {
+            genres.add("无码破解")
+        }
+        if (id.contains("-chinese-subtitle", ignoreCase = true)) {
+            genres.add("中文字幕")
+        }
+        if (id.contains("-english-subtitle", ignoreCase = true)) {
+            genres.add("英文字幕")
+        }
+        return genres.joinToString(", ")
+    }
 }
 
 private val STRIP_SUB_REGEX by lazy { Regex("""-uncensored-leak|-chinese-subtitle|-english-subtitle""") }

@@ -54,19 +54,13 @@ abstract class MissAV :
         M3u8Integration(client)
     }
 
-    override fun popularAnimeRequest(page: Int) = GET("$baseUrl/en/today-hot?page=$page", docHeaders)
+    override fun popularAnimeRequest(page: Int) = GET("$baseUrl/cn/today-hot?page=$page", docHeaders)
 
     override fun popularAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
 
         val entries = document.select("div.thumbnail").map { element ->
-            SAnime.create().apply {
-                element.select("a.text-secondary").also {
-                    setUrlWithoutDomain(it.attr("href"))
-                    title = it.text()
-                }
-                thumbnail_url = element.selectFirst("img")?.attr("abs:data-src")
-            }
+            element.parseAnime()
         }
 
         val hasNextPage = document.selectFirst("a[rel=next]") != null
@@ -74,7 +68,7 @@ abstract class MissAV :
         return AnimesPage(entries, hasNextPage)
     }
 
-    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/en/new?page=$page", docHeaders)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/cn/new?page=$page", docHeaders)
 
     override fun latestUpdatesParse(response: Response) = popularAnimeParse(response)
 
@@ -82,12 +76,12 @@ abstract class MissAV :
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             val genre = filters.firstInstanceOrNull<GenreList>()?.selected
             if (query.isNotEmpty()) {
-                addEncodedPathSegments("en/search")
+                addEncodedPathSegments("cn/search")
                 addPathSegment(query.trim())
             } else if (genre != null) {
                 addEncodedPathSegments(genre)
             } else {
-                addEncodedPathSegments("en/new")
+                addEncodedPathSegments("cn/new")
             }
             filters.firstInstanceOrNull<SortFilter>()?.selected?.let {
                 addQueryParameter("sort", it)
@@ -122,13 +116,7 @@ abstract class MissAV :
         }
 
         val entries = document.select("div.thumbnail").map { element ->
-            SAnime.create().apply {
-                element.select("a.text-secondary").also {
-                    setUrlWithoutDomain(it.attr("href"))
-                    title = it.text()
-                }
-                thumbnail_url = element.selectFirst("img")?.attr("abs:data-src")
-            }
+            element.parseAnime()
         }
 
         val hasNextPage = document.selectFirst("a[rel=next]") != null
@@ -268,6 +256,29 @@ abstract class MissAV :
         }
     }
 
+    private fun Element.parseAnime() = SAnime.create().apply {
+        val link = select("a.text-secondary")
+        val href = link.attr("href")
+        setUrlWithoutDomain(href)
+        title = link.text()
+        thumbnail_url = selectFirst("img")?.attr("abs:data-src")
+        genre = extractGenresFromUrl(href)
+    }
+
+    private fun extractGenresFromUrl(url: String): String {
+        val genres = mutableListOf<String>()
+        if (url.contains("-uncensored-leak", ignoreCase = true)) {
+            genres.add("无码破解")
+        }
+        if (url.contains("-chinese-subtitle", ignoreCase = true)) {
+            genres.add("中文字幕")
+        }
+        if (url.contains("-english-subtitle", ignoreCase = true)) {
+            genres.add("英文字幕")
+        }
+        return genres.joinToString(", ")
+    }
+
     companion object {
         private const val PREF_QUALITY = "preferred_quality"
         private const val PREF_QUALITY_TITLE = "Preferred quality"
@@ -275,7 +286,7 @@ abstract class MissAV :
         private val PREF_QUALITY_VALUES = listOf("720", "480", "360")
         private val PREF_QUALITY_DEFAULT = PREF_QUALITY_VALUES.first()
 
-        private const val PREF_UUID_KEY = "missav_uuid"
+        private const val PREF_UUID_KEY = "missav_cn_uuid"
 
         private val regexWhitespace = Regex("\\s+")
         private val regexSpecialCharacters =
